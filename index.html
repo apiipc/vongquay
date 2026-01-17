@@ -893,6 +893,53 @@
                 opacity: 0;
             }
         }
+        
+        /* THANH HIỂN THỊ 5 NGƯỜI LÂN CẬN */
+        .adjacent-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.9) 100%);
+            border-top: 3px solid rgba(255, 215, 0, 0.5);
+            z-index: 100;
+        }
+        
+        .adjacent-item {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            min-width: 150px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .adjacent-item.adjacent-current {
+            background: linear-gradient(180deg, #ff6b35 0%, #f7c200 100%);
+            color: white;
+            font-size: 1.2rem;
+            padding: 15px 35px;
+            min-width: 200px;
+            border: 3px solid #fff;
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.6);
+            transform: scale(1.1);
+        }
+        
+        body:not(.fullscreen) .adjacent-bar {
+            display: none;
+        }
 
         .participant-count {
             background: rgba(0, 180, 255, 0.8);
@@ -1064,6 +1111,16 @@
                 </button>
             </div>
         </div>
+    </div>
+
+    <!-- THANH HIỂN THỊ: 5 NGƯỜI TRƯỚC + NGƯỜI ĐANG CHỌN (bên phải) -->
+    <div id="adjacentBar" class="adjacent-bar">
+        <div class="adjacent-item" id="adj-0">-</div>
+        <div class="adjacent-item" id="adj-1">-</div>
+        <div class="adjacent-item" id="adj-2">-</div>
+        <div class="adjacent-item" id="adj-3">-</div>
+        <div class="adjacent-item" id="adj-4">-</div>
+        <div class="adjacent-item adjacent-current" id="adj-5">-</div>
     </div>
 
     <!-- BẢNG VINH DANH (Ẩn mặc định) -->
@@ -1398,6 +1455,9 @@
                     void currentNameEl.offsetWidth;
                     currentNameEl.classList.add('show');
                     
+                    // CẬP NHẬT THANH 5 NGƯỜI LÂN CẬN
+                    updateAdjacentBar(activeParticipants, currentSegment);
+                    
                     playTick();
                 }
                 
@@ -1428,6 +1488,33 @@
                 tickSound.currentTime = 0;
                 tickSound.play().catch(() => {});
             } catch (e) {}
+        }
+
+        // CẬP NHẬT THANH: 5 NGƯỜI TRƯỚC + NGƯỜI ĐANG CHỌN (bên phải)
+        // CẬP NHẬT THANH: 5 NGƯỜI TRƯỚC + NGƯỜI ĐANG CHỌN (bên phải)
+        function updateAdjacentBar(participants, currentIndex) {
+            const count = participants.length;
+            if (count === 0) return;
+            
+            // Ô 0-4: 5 người trước đó (từ xa đến gần)
+            // Ô 5: người hiện tại
+            for (let i = 0; i < 6; i++) {
+                const el = document.getElementById('adj-' + i);
+                if (el) {
+                    // i=0 là người cách 5 bước trước, i=5 là người hiện tại
+                    const offset = i - 5; // -5, -4, -3, -2, -1, 0
+                    const idx = (currentIndex + offset + count) % count;
+                    el.textContent = participants[idx] || '-';
+                }
+            }
+        }
+
+        // Xóa thanh khi không quay
+        function clearAdjacentBar() {
+            for (let i = 0; i < 6; i++) {
+                const el = document.getElementById('adj-' + i);
+                if (el) el.textContent = '-';
+            }
         }
 
         function showWinner() {
